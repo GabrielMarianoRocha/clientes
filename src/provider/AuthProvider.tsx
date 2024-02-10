@@ -1,5 +1,5 @@
 import React, { createContext, useState, useEffect } from "react";
-import { getAuth, onAuthStateChanged } from "firebase/auth";
+// import { getAuth, onAuthStateChanged } from "firebase/auth";
 
 type ContextProps = {
   user: null | boolean;
@@ -12,24 +12,25 @@ interface Props {
 }
 
 const AuthProvider = (props: Props) => {
-  const auth = getAuth();
+  // const auth = getAuth();
   // user null = loading
   const [user, setUser] = useState<null | boolean>(null);
 
   useEffect(() => {
-    checkLogin();
+    // checkLogin();
+    setUser(true);
   }, []);
 
   function checkLogin() {
-    onAuthStateChanged(auth, function (u) {
-      if (u) {
-        setUser(true);
-        // getUserData();
-      } else {
-        setUser(false);
-        // setUserData(null);
-      }
-    });
+    // onAuthStateChanged(auth, function (u) {
+    //   if (u) {
+    //     setUser(true);
+    //     // getUserData();
+    //   } else {
+    //     setUser(false);
+    //     // setUserData(null);
+    //   }
+    // });
   }
 
   return (

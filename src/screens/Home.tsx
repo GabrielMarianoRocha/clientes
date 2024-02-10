@@ -1,7 +1,7 @@
 import React from "react";
 import { View, Linking } from "react-native";
 import { MainStackParamList } from "../types/navigation";
-import { getAuth, signOut } from "firebase/auth";
+// import { getAuth, signOut } from "firebase/auth";
 import { NativeStackScreenProps } from "@react-navigation/native-stack";
 import {
   Layout,
@@ -19,7 +19,7 @@ export default function ({
   navigation,
 }: NativeStackScreenProps<MainStackParamList, "MainTabs">) {
   const { isDarkmode, setTheme } = useTheme();
-  const auth = getAuth();
+  // const auth = getAuth();
   return (
     <Layout>
       <TopNav
@@ -70,7 +70,7 @@ export default function ({
               status="danger"
               text="Logout"
               onPress={() => {
-                signOut(auth);
+                // signOut(auth);
               }}
               style={{
                 marginTop: 10,

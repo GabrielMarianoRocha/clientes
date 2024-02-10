@@ -8,7 +8,7 @@ import {
   Image,
 } from "react-native";
 import { AuthStackParamList } from "../../types/navigation";
-import { getAuth, createUserWithEmailAndPassword } from "firebase/auth";
+// import { getAuth, createUserWithEmailAndPassword } from "firebase/auth";
 import { NativeStackScreenProps } from "@react-navigation/native-stack";
 import {
   Layout,
@@ -23,23 +23,23 @@ export default function ({
   navigation,
 }: NativeStackScreenProps<AuthStackParamList, "Register">) {
   const { isDarkmode, setTheme } = useTheme();
-  const auth = getAuth();
+  // const auth = getAuth();
   const [email, setEmail] = useState<string>("");
   const [password, setPassword] = useState<string>("");
   const [loading, setLoading] = useState<boolean>(false);
 
   async function register() {
     setLoading(true);
-    await createUserWithEmailAndPassword(auth, email, password).catch(function (
-      error: any
-    ) {
-      // Handle Errors here.
-      var errorCode = error.code;
-      var errorMessage = error.message;
-      // ...
-      setLoading(false);
-      alert(errorMessage);
-    });
+    // await createUserWithEmailAndPassword(auth, email, password).catch(function (
+    //   error: any
+    // ) {
+    //   // Handle Errors here.
+    //   var errorCode = error.code;
+    //   var errorMessage = error.message;
+    //   // ...
+    //   setLoading(false);
+    //   alert(errorMessage);
+    // });
   }
   return (
     <KeyboardAvoidingView behavior="height" enabled style={{ flex: 1 }}>

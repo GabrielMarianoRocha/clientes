@@ -7,7 +7,7 @@ import {
   Image,
 } from "react-native";
 import { AuthStackParamList } from "../../types/navigation";
-import { getAuth, sendPasswordResetEmail } from "firebase/auth";
+// import { getAuth, sendPasswordResetEmail } from "firebase/auth";
 import { NativeStackScreenProps } from "@react-navigation/native-stack";
 import {
   Layout,
@@ -22,22 +22,22 @@ export default function ({
   navigation,
 }: NativeStackScreenProps<AuthStackParamList, "ForgetPassword">) {
   const { isDarkmode, setTheme } = useTheme();
-  const auth = getAuth();
+  // const auth = getAuth();
   const [email, setEmail] = useState<string>("");
   const [loading, setLoading] = useState<boolean>(false);
 
   async function forget() {
     setLoading(true);
-    await sendPasswordResetEmail(auth, email)
-      .then(function () {
-        setLoading(false);
-        navigation.navigate("Login");
-        alert("Your password reset has been sent to your email");
-      })
-      .catch(function (error) {
-        setLoading(false);
-        alert(error);
-      });
+    // await sendPasswordResetEmail(auth, email)
+    //   .then(function () {
+    //     setLoading(false);
+    //     navigation.navigate("Login");
+    //     alert("Your password reset has been sent to your email");
+    //   })
+    //   .catch(function (error) {
+    //     setLoading(false);
+    //     alert(error);
+    //   });
   }
   return (
     <KeyboardAvoidingView behavior="height" enabled style={{ flex: 1 }}>
