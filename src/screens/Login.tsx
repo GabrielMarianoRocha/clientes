@@ -1,3 +1,4 @@
+import { Input } from "@ui-kitten/components";
 import React, { useState } from "react";
 import {
   ScrollView,
@@ -6,40 +7,39 @@ import {
   KeyboardAvoidingView,
   Image,
 } from "react-native";
-import { AuthStackParamList } from "../../types/navigation";
-// import { getAuth, signInWithEmailAndPassword } from "firebase/auth";
-import { NativeStackScreenProps } from "@react-navigation/native-stack";
+import Toast from "react-native-toast-message";
 import {
   Layout,
   Text,
-  TextInput,
   Button,
   useTheme,
   themeColor,
 } from "react-native-rapi-ui";
 
-export default function ({
-  navigation,
-}: NativeStackScreenProps<AuthStackParamList, "Login">) {
+export default function ({ navigation }) {
   const { isDarkmode, setTheme } = useTheme();
-  // const auth = getAuth();
-  const [email, setEmail] = useState<string>("");
+  const [cpf, setCpf] = useState<string>("");
   const [password, setPassword] = useState<string>("");
   const [loading, setLoading] = useState<boolean>(false);
+  const [isError, setIsError] = useState<boolean>(false);
 
   async function login() {
     setLoading(true);
-    // await signInWithEmailAndPassword(auth, email, password).catch(function (
-    //   error
-    // ) {
-    //   // Handle Errors here.
-    //   var errorCode = error.code;
-    //   var errorMessage = error.message;
-    //   // ...
-    //   setLoading(false);
-    //   alert(errorMessage);
-    // });
+    setIsError(false);
+
+    if (cpf.length < 11 || password.length < 6) {
+      setIsError(true);
+      setLoading(false);
+      Toast.show({
+        type: "error",
+        text1: "Campos Inválidos!",
+        text2: "CPF ou Senha inválidos, verifique e tente novamente.",
+      });
+      return;
+    }
+    setLoading(false);
   }
+
   return (
     <KeyboardAvoidingView behavior="height" enabled style={{ flex: 1 }}>
       <Layout>
@@ -62,7 +62,7 @@ export default function ({
                 height: 220,
                 width: 220,
               }}
-              source={require("../../../assets/images/login.png")}
+              source={require("../../assets/images/login.png")}
             />
           </View>
           <View
@@ -83,31 +83,37 @@ export default function ({
             >
               Login
             </Text>
-            <Text>Email</Text>
-            <TextInput
-              containerStyle={{ marginTop: 15 }}
-              placeholder="Enter your email"
-              value={email}
+            <Text>CPF</Text>
+            <Input
+              placeholder="Insira seu CPF"
+              value={cpf}
               autoCapitalize="none"
-              autoCompleteType="off"
+              autoComplete="off"
               autoCorrect={false}
-              keyboardType="email-address"
-              onChangeText={(text) => setEmail(text)}
+              maxLength={11}
+              keyboardType="number-pad"
+              onChangeText={(text) => setCpf(text)}
+              style={{ marginTop: 15 }}
+              size="large"
+              inputMode="decimal"
+              status={isError ? "danger" : "basic"}
             />
 
-            <Text style={{ marginTop: 15 }}>Password</Text>
-            <TextInput
-              containerStyle={{ marginTop: 15 }}
-              placeholder="Enter your password"
+            <Text style={{ marginTop: 15 }}>Senha</Text>
+            <Input
+              placeholder="Insira sua senha"
               value={password}
               autoCapitalize="none"
-              autoCompleteType="off"
+              autoComplete="off"
               autoCorrect={false}
               secureTextEntry={true}
               onChangeText={(text) => setPassword(text)}
+              style={{ marginTop: 15 }}
+              size="large"
+              status={isError ? "danger" : "basic"}
             />
             <Button
-              text={loading ? "Loading" : "Continue"}
+              text={loading ? "Loading" : "Acessar"}
               onPress={() => {
                 login();
               }}
