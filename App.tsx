@@ -1,8 +1,11 @@
 import React from "react";
 import Navigation from "./src/navigation";
 import { AuthProvider } from "./src/provider/AuthProvider";
-import { ThemeProvider } from "react-native-rapi-ui";
+// import { ThemeProvider } from "react-native-rapi-ui";
 import { LogBox } from "react-native";
+import { ApplicationProvider } from "@ui-kitten/components";
+import * as eva from "@eva-design/eva";
+import { SafeAreaProvider } from "react-native-safe-area-context";
 
 export default function App() {
   const images = [
@@ -19,10 +22,12 @@ export default function App() {
   }, []);
 
   return (
-    <ThemeProvider theme="dark" images={images}>
+    <ApplicationProvider {...eva} theme={eva.light}>
       <AuthProvider>
-        <Navigation />
+        <SafeAreaProvider>
+          <Navigation />
+        </SafeAreaProvider>
       </AuthProvider>
-    </ThemeProvider>
+    </ApplicationProvider>
   );
 }
