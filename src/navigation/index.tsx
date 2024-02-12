@@ -21,7 +21,7 @@ export default () => {
         screenOptions={{
           headerShown: false,
         }}
-        initialRouteName={!user ? "CitySelection" : "Login"}
+        // initialRouteName={user == false ? "CitySelection" : "Login"}
       >
         <Stack.Screen name="CitySelection" component={CitySelection} />
         <Stack.Screen name="Login" component={Login} />
