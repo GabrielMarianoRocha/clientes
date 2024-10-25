@@ -1,33 +1,33 @@
-import React, { useCallback, useContext, useEffect, useState } from "react";
-import {
-  ScrollView,
-  TouchableOpacity,
-  View,
-  KeyboardAvoidingView,
-  Image,
-  Dimensions,
-} from "react-native";
-import { Layout, Button, themeColor } from "react-native-rapi-ui";
+import { version } from "../../package.json";
+import * as Yup from "yup";
+import { yupResolver } from "@hookform/resolvers/yup";
+import React, {
+  useCallback,
+  useContext,
+  useEffect,
+  useMemo,
+  useState
+} from "react";
+import { ScrollView, View, KeyboardAvoidingView, Image, ActivityIndicator } from "react-native";
+import { Layout, themeColor } from "react-native-rapi-ui";
 import axios from "axios";
-import { IState } from "../types/state";
-import { Text, useTheme } from "@ui-kitten/components";
+import { IState } from "../@types/state";
+import { Text, Button, useTheme } from "@ui-kitten/components";
 import filter from "../utils/filter";
+import { TAutocompleteDropdownItem } from "react-native-autocomplete-dropdown";
+import { AuthContext } from "../contexts/auth";
+import * as api from "../services/api";
+import { remove } from "remove-accents";
+import { IBGE_PATH } from "../utils/constants";
+import { FormProvider, useForm } from "react-hook-form";
+import { ICitySelected } from "../@types/citySelected";
+import { HFAutoComplete } from "../components/hook-form";
 import Toast from "react-native-toast-message";
-import {
-  AutocompleteDropdown,
-  TAutocompleteDropdownItem,
-} from "react-native-autocomplete-dropdown";
-import { AuthContext } from "../provider/AuthProvider";
 
 export default function ({ navigation }) {
   const { isDarkmode } = useTheme();
-
-  const user = useContext(AuthContext);
-
+  const authData = useContext(AuthContext);
   const [states, setStates] = useState<TAutocompleteDropdownItem[]>([]);
-  const [selectedState, setSelectedState] =
-    useState<TAutocompleteDropdownItem>();
-  const [selectedCity, setSelectedCity] = useState<TAutocompleteDropdownItem>();
   const [dataFiltredState, setDataFiltredState] = useState<
     TAutocompleteDropdownItem[]
   >([]);
@@ -36,67 +36,111 @@ export default function ({ navigation }) {
   >([]);
   const [cities, setCities] = useState<TAutocompleteDropdownItem[]>([]);
   const [loading, setLoading] = useState<boolean>(false);
+  const [loadingState, setLoadingState] = useState<boolean>(false);
+  const [loadingCity, setLoadingCity] = useState<boolean>(false);
+  const CitySelectionSchema = useMemo(
+    () =>
+      Yup.object<ICitySelected>({
+        state: Yup.object().default(undefined).required("Campo obrigatório!"),
+        city: Yup.object().default(undefined).required("Campo obrigatório!"),
+      }),
+    [Yup]
+  );
 
-  function forget() {
+  const defaultValues = useMemo<ICitySelected>(
+    () => ({
+      state: undefined,
+      city: undefined,
+    }),
+    []
+  );
+
+  const methods = useForm<ICitySelected>({
+    resolver: yupResolver(CitySelectionSchema),
+    defaultValues,
+  });
+
+  const { handleSubmit, watch, setValue, resetField } = methods;
+
+  const selectedState = watch("state");
+
+  const onSubmit = async(data: ICitySelected) => {
     setLoading(true);
-    if (selectedCity?.id) {
-      user.city = selectedCity;
-      navigation.navigate("Login");
-    } else {
+    try {
+        await api.verifyCity(data.city?.id);
+        authData.city = data.city;
+        navigation.navigate("Login");
+    } catch(error) {
       Toast.show({
-        type: "error",
-        text1: "Campos Inválidos!",
-        text2: "Selecione um Estado e um município para prosseguir.",
+        type: "info",
+        text1: "Informação!",
+        text2: "O município selecionado não está ativo!",
+        visibilityTime: 10000,
       });
+    } finally {
+      setLoading(false);
     }
-    setLoading(false);
-  }
+  };
 
   const getStates = useCallback(async () => {
+    setLoadingState(true);
     try {
-      const { data } = await axios.get<IState[]>(
-        "https://servicodados.ibge.gov.br/api/v1/localidades/estados"
-      );
-
+      const { data } = await axios.get<IState[]>(IBGE_PATH);
       const dataToSet = data.map((item) => ({
         id: item.id.toString(),
         title: item.nome,
       })) as TAutocompleteDropdownItem[];
-
+  
+      dataToSet.sort((a, b) => a.title.localeCompare(b.title));
+  
       setStates(dataToSet);
       setDataFiltredState(dataToSet);
     } catch (error) {
-      console.warn("Deu erro estados");
+      console.warn(error);
+    } finally {
+      setLoadingState(false);
     }
-  }, []);
+  }, [IBGE_PATH]);
+  
 
-  const getCities = useCallback(async (id: string) => {
-    try {
-      const { data } = await axios.get<IState[]>(
-        `https://servicodados.ibge.gov.br/api/v1/localidades/estados/${id}/municipios`
-      );
-      const dataToSet = data.map((item) => ({
-        id: item.id.toString(),
-        title: item.nome,
-      })) as TAutocompleteDropdownItem[];
+  const getCities = useCallback(
+    async (id: string) => {
+      setLoadingCity(true);
+      try {
+        const { data } = await axios.get<IState[]>(
+          `${IBGE_PATH}/${id}/municipios`
+        );
+        const dataToSet = data.map((item) => ({
+          id: item.id.toString(),
+          title: item.nome,
+        })) as TAutocompleteDropdownItem[];
 
-      setCities(dataToSet);
-      setDataFiltredCity(dataToSet);
-    } catch (error) {
-      console.warn("Deu erro cidades");
-    }
-  }, []);
+        setCities(dataToSet);
+        setDataFiltredCity(dataToSet);
+      } catch (error) {
+        console.warn("Deu erro cidades");
+      } finally {
+        setLoadingCity(false);
+      }
+    },
+    [IBGE_PATH]
+  );
 
-  const onClearPress = useCallback(() => {
-    setCities([]);
-    setDataFiltredCity([]);
-    setSelectedCity(undefined);
-  }, []);
+  const onClearPressState = useCallback(() => {
+    setValue("city", undefined);
+    setValue("state", undefined);
+  }, [setValue]);
+
+  const onClearPressCity = useCallback(() => {
+    setValue("city", undefined);
+  }, [setValue]);
 
   const onChangeTextState = useCallback(
     (query): void => {
       const newList =
-        states.filter((item) => filter(item.title, query)) ?? states;
+        states.filter((item) =>
+          filter(remove(item.title as string), remove(query).trim())
+        ) ?? states;
       setDataFiltredState(newList);
     },
     [states]
@@ -105,7 +149,9 @@ export default function ({ navigation }) {
   const onChangeTextCity = useCallback(
     (query): void => {
       const newList =
-        cities.filter((item) => filter(item.title, query)) ?? cities;
+        cities.filter((item) =>
+          filter(remove(item.title as string), remove(query).trim())
+        ) ?? cities;
       setDataFiltredCity(newList);
     },
     [cities]
@@ -140,10 +186,10 @@ export default function ({ navigation }) {
             <Image
               resizeMode="contain"
               style={{
-                height: 220,
-                width: 220,
+                height: 250,
+                width: 250,
               }}
-              source={require("../../assets/images/logo.png")}
+              source={require("../../assets/images/logo-cogesan.png")}
             />
           </View>
           <View
@@ -154,97 +200,51 @@ export default function ({ navigation }) {
               backgroundColor: isDarkmode ? themeColor.dark : themeColor.white,
             }}
           >
-            <Text
-              category="label"
-              style={{
-                marginTop: 20,
-                fontSize: 16,
-              }}
-            >
-              Estado
-            </Text>
-            <AutocompleteDropdown
-              onSelectItem={setSelectedState}
-              dataSet={dataFiltredState}
-              inputHeight={60}
-              clearOnFocus={false}
-              closeOnBlur={false}
-              useFilter={false}
-              onClear={onClearPress}
-              textInputProps={{
-                placeholder: "Digite o nome do estado",
-              }}
-              emptyResultText="Estado não encontrado..."
-              onChangeText={onChangeTextState}
-              suggestionsListMaxHeight={Dimensions.get("window").height * 0.4}
-              inputContainerStyle={{
-                backgroundColor: "white",
-                borderWidth: 2,
-                borderColor: "#ebeced",
-              }}
-            />
-            <Text
-              category="label"
-              style={{
-                marginTop: 20,
-                fontSize: 16,
-              }}
-            >
-              Município
-            </Text>
-            <AutocompleteDropdown
-              onSelectItem={setSelectedCity}
-              dataSet={dataFiltredCity}
-              inputHeight={60}
-              clearOnFocus={false}
-              closeOnBlur={false}
-              useFilter={false}
-              textInputProps={{
-                placeholder: "Digite o nome do município",
-                editable: !!selectedState,
-              }}
-              emptyResultText="Município não encontrado..."
-              onChangeText={onChangeTextCity}
-              suggestionsListMaxHeight={Dimensions.get("window").height * 0.4}
-              inputContainerStyle={{
-                backgroundColor: !selectedState ? "#f2f2f2" : "white",
-                borderWidth: 2,
-                borderColor: "#ebeced",
-              }}
-              rightButtonsContainerStyle={{
-                display: !selectedState ? "none" : undefined,
-              }}
-            />
+            <FormProvider {...methods}>
+              <HFAutoComplete
+                name="state"
+                label="Estado"
+                placeholder="Digite o nome do estado"
+                emptyResultText="Nenhum estado foi encontrado."
+                dataSet={dataFiltredState}
+                loading={loadingState}
+                onClear={onClearPressState}
+                onChangeText={onChangeTextState}
+                required
+              />
+              <HFAutoComplete
+                name="city"
+                label="Município"
+                placeholder={!selectedState ? "" : "Digite o nome do município"}
+                emptyResultText="Nenhum município foi encontrado."
+                dataSet={dataFiltredCity}
+                loading={loadingCity}
+                onClear={onClearPressCity}
+                onChangeText={onChangeTextCity}
+                disabled={!selectedState}
+                required
+              />
+            </FormProvider>
             <Button
-              text={loading ? "Carregando" : "Continuar"}
-              onPress={forget}
+              onPress={handleSubmit(onSubmit)}
               style={{
                 marginTop: 20,
+                backgroundColor: "#4169E1",
+                height: 60,
               }}
               disabled={loading}
-            />
-            <View
-              style={{
-                flexDirection: "row",
-                alignItems: "center",
-                marginTop: 30,
-                justifyContent: "center",
-              }}
             >
-              <TouchableOpacity
-                onPress={() => {
-                  // isDarkmode ? setTheme("light") : setTheme("dark");
-                }}
-              >
-                <Text
-                  style={{
-                    marginLeft: 5,
-                  }}
-                >
-                  {isDarkmode ? "☀️ Tema claro" : "🌑 Tema escuro"}
-                </Text>
-              </TouchableOpacity>
-            </View>
+              {loading ? <ActivityIndicator size={15} color="white" /> : "Continuar"}
+            </Button>
+          </View>
+          <View
+            style={{
+              alignItems: "center",
+              backgroundColor: isDarkmode ? themeColor.dark : themeColor.white,
+              padding: 5,
+            }}
+          >
+            <Text category="label">v{version}</Text>
           </View>
         </ScrollView>
       </Layout>

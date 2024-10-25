@@ -12,6 +12,14 @@
     "resolveJsonModule": true,
     "strict": true,
     "noImplicitAny": false,
+    "strictNullChecks": true,
+    "noFallthroughCasesInSwitch": true,
+    "useUnknownInCatchVariables": false,
+    "forceConsistentCasingInFileNames": true,
   },
-  "extends": "expo/tsconfig.base"
+  "extends": "expo/tsconfig.base",
+  "include": [
+    "**/*.ts",
+    "**/*.tsx"
+  ]
 }

@@ -1,19 +1,17 @@
-import React from "react";
-import { View, ActivityIndicator } from "react-native";
-import { Layout, themeColor } from "react-native-rapi-ui";
+import React from 'react';
+import { View, ActivityIndicator } from 'react-native';
 
 export default function () {
   return (
-    <Layout>
-      <View
-        style={{
-          flex: 1,
-          alignItems: "center",
-          justifyContent: "center",
-        }}
-      >
-        <ActivityIndicator size="large" color={themeColor.primary} />
-      </View>
-    </Layout>
+    <View
+      style={{
+        display: 'flex',
+        height: '100%',
+        alignItems: 'center',
+        justifyContent: 'center',
+      }}
+    >
+      <ActivityIndicator size="large" color="#4169E1" />
+    </View>
   );
 }

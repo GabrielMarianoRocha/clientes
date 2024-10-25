@@ -1,14 +1,14 @@
 {
   "expo": {
-    "name": "TypescriptBottomTabsAuthFlow",
-    "slug": "TypescriptBottomTabsAuthFlow",
+    "name": "Atendimento águas",
+    "slug": "atendimento-aguas",
     "version": "1.0.0",
     "orientation": "portrait",
-    "icon": "./assets/images/icon.png",
+    "icon": "./assets/images/logo-cogesan.png",
     "scheme": "myapp",
     "userInterfaceStyle": "automatic",
     "splash": {
-      "image": "./assets/images/splash.png",
+      "image": "./assets/images/logo-cogesan.png",
       "resizeMode": "contain",
       "backgroundColor": "#ffffff"
     },
@@ -19,20 +19,35 @@
       "**/*"
     ],
     "ios": {
-      "supportsTablet": true
+      "adaptiveIcon": {
+        "foregroundImage": "./assets/images/logo_icon.png",
+        "backgroundColor": "#FFFFFF"
+      },
+      "supportsTablet": true,
+      "bundleIdentifier": "com.app.cogesan"
     },
     "android": {
       "adaptiveIcon": {
-        "foregroundImage": "./assets/images/adaptive-icon.png",
+        "foregroundImage": "./assets/images/logo_icon.png",
         "backgroundColor": "#FFFFFF"
-      }
+      },
+      "package": "com.app.cogesan"
     },
     "web": {
-      "favicon": "./assets/images/favicon.png"
+      "favicon": "./assets/images/logo_icon.png"
     },
     "plugins": [
       "expo-router",
       "expo-font"
-    ]
+    ],
+    "extra": {
+      "router": {
+        "origin": false
+      },
+      "eas": {
+        "projectId": "c054a832-bc22-43ba-82b8-044d22dccf87"
+      }
+    },
+    "owner": "atendimentoaguasapp"
   }
 }
