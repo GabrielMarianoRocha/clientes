@@ -203,14 +203,15 @@ export default function ({ navigation }) {
         ))}
       </ScrollView>
       <Modal
-      visible={visible}
-      style={{
-        flex: 1,
-        width: '100%',
-        height: '100%',
-        backgroundColor: 'white',
-        padding: 1,
-      }}
+        visible={visible}
+        style={{
+          flex: 1,
+          height: Dimensions.get('window').height,
+          width: Dimensions.get('window').width,
+          backgroundColor: 'white',
+          padding: 1,
+
+        }}
     >
       <Layout style={{ paddingVertical: 5, paddingHorizontal: 8 }}>
         <Input

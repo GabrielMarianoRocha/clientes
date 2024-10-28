@@ -1,5 +1,5 @@
 import React, { useCallback, useEffect, useState } from 'react';
-import { View, TouchableNativeFeedback, StyleSheet, ScrollView, Dimensions, Linking } from 'react-native';
+import { View, TouchableNativeFeedback, StyleSheet, ScrollView, Dimensions, Linking, KeyboardAvoidingView, Platform } from 'react-native';
 import Toast from 'react-native-toast-message';
 import { IUc, IUcDetail } from '../@types/uc';
 import {
@@ -223,129 +223,134 @@ export default function ({ navigation }) {
         )}
       </ScrollView>
       <Layout loading={loadingModal}>
-      <Modal
-        visible={visible}
-        style={{
-          flex: 1,
-          backgroundColor: 'white',
-          height: '100%',
-          borderRadius: 8,
-          overflow: 'hidden',
-        }}
-      >
-      {/* Unidade Selecionada Section */}
-      <Layout style={{ padding: 10 }}>
-        <Text category="h6" style={{ marginBottom: 8 }}>Unidade selecionada:</Text>
-        <Text style={{ fontWeight: 'bold' }}>Endereço: <Text>{selectedUc?.endereco}</Text></Text>
-        <View style={{ flexDirection: 'row', justifyContent: 'space-between', marginVertical: 8 }}>
-          <Text style={{ fontWeight: 'bold' }}>UC: <Text>{selectedUc?.codigo}</Text></Text>
-          <Text style={{ fontWeight: 'bold' }}>Hidrômetro: <Text>{selectedUc?.hidrometro}</Text></Text>
-        </View>
-        <Text style={{ fontWeight: 'bold' }}>
-          Situação: <Text style={{ color: selectedUc?.situacao === 'INATIVA' ? 'red' : 'green' }}>
-            {selectedUc?.situacao}
-          </Text>
-        </Text>
-      </Layout>
-
-      {/* Input Filter */}
-      <Layout style={{ paddingHorizontal: 1 }}>
-        <Input
-          onChangeText={(text) => setFilterTextRefs(text)}
-          value={filterTextRefs}
-          placeholder="Filtrar por Referência, Valor, Vencimento ou Situação"
-          style={{
-            marginVertical: 10,
-            padding: 10,
-            borderRadius: 5,
-          }}
-        />
-      </Layout>
-      
-      {/* Divider and Header */}
-      <Divider />
-      <View style={{ flexDirection: 'row', justifyContent: 'space-between', padding: 10 }}>
-        <Text category="label" style={{ fontWeight: 'bold' }}>Referência</Text>
-        <Text category="label" style={{ fontWeight: 'bold' }}>Valor</Text>
-        <Text category="label" style={{ fontWeight: 'bold' }}>Vencimento</Text>
-        <Text category="label" style={{ fontWeight: 'bold' }}>Situação</Text>
-      </View>
-
-      {/* Scrollable Content */}
-      <ScrollView style={{ flex: 1, paddingHorizontal: 10 }}>
-        {filteredRefs?.length > 0 ? (
-          filteredRefs
-            .filter(item => item.situacao !== 'BAIXADO' && item.situacao !== 'CONTESTADO')
-            .map((item, index) => (
-              <Card
-                key={`debito-${index}`}
-                style={{ marginVertical: 8 }}
-                status={item.situacao === 'BAIXADO' ? 'success' : 'warning'}
-              >
-                <View style={{ flexDirection: 'row', justifyContent: 'space-between', marginBottom: 8 }}>
-                  <Text>{item.referencia}</Text>
-                  <Text>{formatValue(item.valor)}</Text>
-                  <Text>{format(item.vencimento, 'dd/MM/yyyy')}</Text>
-                  <Text style={{ fontWeight: 'bold' }}>{item.situacao}</Text>
-                </View>
-
-                {/* Payment Options */}
-                {((item.situacao !== 'BAIXADO' && item.pix) || item.codigoBarras) && (
-                  <View style={{ marginTop: 10 }}>
-                    <Text category="label">Pagar com:</Text>
-                    <View style={{ flexDirection: 'row', marginTop: 8 }}>
-                      {item.situacao !== 'BAIXADO' && item.pix && (
-                        <Button
-                          size='tiny'
-                          onPress={() => copyToClipboard(item.pix)}
-                          style={{ marginRight: 5 }}
-                          accessoryLeft={() => <FontAwesome6 name="pix" size={16} color="white" />}
-                        >
-                          Pix
-                        </Button>
-                      )}
-                      {item.situacao !== 'BAIXADO' && item.codigoBarras && (
-                        <Button
-                          size='tiny'
-                          onPress={() => copyToClipboard(item.codigoBarras)}
-                          style={{ marginRight: 5 }}
-                          accessoryLeft={() => <FontAwesome6 name="barcode" size={16} color="white" />}
-                        >
-                          Código de barras
-                        </Button>
-                      )}
-                      {item.situacao !== 'BAIXADO' && item.codigoBarras && (
-                        <Button
-                          size='tiny'
-                          style={{ backgroundColor: 'rgb(241, 86, 66)', borderColor: 'rgb(241, 86, 66)' }}
-                          onPress={() => Linking.openURL(REPORT_PATH + item.documentoId)}
-                          accessoryLeft={() => <FontAwesome6 name="file-pdf" size={16} color="white" />}
-                        >
-                          Baixar documento
-                        </Button>
-                      )}
-                    </View>
-                  </View>
-                )}
-              </Card>
-            ))
-        ) : (
-          <View style={{ alignItems: 'center', marginTop: screenHeight * 0.2 }}>
-            <Text>Nenhum lançamento para a unidade selecionada.</Text>
-          </View>
-        )}
-      </ScrollView>
-
-      <SafeAreaView style={{ padding: 20 }}>
-        <Button
-          style={{ backgroundColor: '#a6ce39', borderColor: '#a6ce39' }}
-          onPress={closeModal}
+        <KeyboardAvoidingView
+          behavior={Platform.OS === "ios" ? "padding" : "height"}
+          style={{ flex: 1 }}
         >
-          Voltar
-        </Button>
-      </SafeAreaView>
-      <Toast />
-    </Modal>
+          <Modal
+            visible={visible}
+            style={{
+              marginTop: '5%',
+              minHeight: Dimensions.get('window').height,
+              width: Dimensions.get('window').width,
+              backgroundColor: 'white',
+              padding: 1,
+            }}
+  
+          >
+            <Layout style={{ padding: 10 }}>
+              <Text category="h6" style={{ marginBottom: 8 }}>Unidade selecionada:</Text>
+              <Text style={{ fontWeight: 'bold' }}>Endereço: <Text>{selectedUc?.endereco}</Text></Text>
+              <View style={{ flexDirection: 'row', justifyContent: 'space-between', marginVertical: 8 }}>
+                <Text style={{ fontWeight: 'bold' }}>UC: <Text>{selectedUc?.codigo}</Text></Text>
+                <Text style={{ fontWeight: 'bold' }}>Hidrômetro: <Text>{selectedUc?.hidrometro}</Text></Text>
+              </View>
+              <Text style={{ fontWeight: 'bold' }}>
+                Situação: <Text style={{ color: selectedUc?.situacao === 'INATIVA' ? 'red' : 'green' }}>
+                  {selectedUc?.situacao}
+                </Text>
+              </Text>
+            </Layout>
+
+            {/* Input Filter */}
+            <Layout style={{ paddingHorizontal: 1 }}>
+              <Input
+                onChangeText={(text) => setFilterTextRefs(text)}
+                value={filterTextRefs}
+                placeholder="Filtrar por Referência, Valor, Vencimento ou Situação"
+                style={{
+                  marginVertical: 10,
+                  padding: 10,
+                  borderRadius: 5,
+                }}
+              />
+            </Layout>
+
+            {/* Divider and Header */}
+            <Divider />
+            <View style={{ flexDirection: 'row', justifyContent: 'space-between', padding: 10 }}>
+              <Text category="label" style={{ fontWeight: 'bold' }}>Referência</Text>
+              <Text category="label" style={{ fontWeight: 'bold' }}>Valor</Text>
+              <Text category="label" style={{ fontWeight: 'bold' }}>Vencimento</Text>
+              <Text category="label" style={{ fontWeight: 'bold' }}>Situação</Text>
+            </View>
+
+            {/* Scrollable Content */}
+            <ScrollView style={{ flex: 1, paddingHorizontal: 10 }}>
+              {filteredRefs?.length > 0 ? (
+                filteredRefs
+                  .filter(item => item.situacao !== 'BAIXADO' && item.situacao !== 'CONTESTADO')
+                  .map((item, index) => (
+                    <Card
+                      key={`debito-${index}`}
+                      style={{ marginVertical: 8 }}
+                      status={item.situacao === 'BAIXADO' ? 'success' : 'warning'}
+                    >
+                      <View style={{ flexDirection: 'row', justifyContent: 'space-between', marginBottom: 8 }}>
+                        <Text>{item.referencia}</Text>
+                        <Text>{formatValue(item.valor)}</Text>
+                        <Text>{format(item.vencimento, 'dd/MM/yyyy')}</Text>
+                        <Text style={{ fontWeight: 'bold' }}>{item.situacao}</Text>
+                      </View>
+
+                      {/* Payment Options */}
+                      {((item.situacao !== 'BAIXADO' && item.pix) || item.codigoBarras) && (
+                        <View style={{ marginTop: 10 }}>
+                          <Text category="label">Pagar com:</Text>
+                          <View style={{ flexDirection: 'row', marginTop: 8 }}>
+                            {item.situacao !== 'BAIXADO' && item.pix && (
+                              <Button
+                                size='tiny'
+                                onPress={() => copyToClipboard(item.pix)}
+                                style={{ marginRight: 5 }}
+                                accessoryLeft={() => <FontAwesome6 name="pix" size={16} color="white" />}
+                              >
+                                Pix
+                              </Button>
+                            )}
+                            {item.situacao !== 'BAIXADO' && item.codigoBarras && (
+                              <Button
+                                size='tiny'
+                                onPress={() => copyToClipboard(item.codigoBarras)}
+                                style={{ marginRight: 5 }}
+                                accessoryLeft={() => <FontAwesome6 name="barcode" size={16} color="white" />}
+                              >
+                                Código de barras
+                              </Button>
+                            )}
+                            {item.situacao !== 'BAIXADO' && item.codigoBarras && (
+                              <Button
+                                size='tiny'
+                                style={{ backgroundColor: 'rgb(241, 86, 66)', borderColor: 'rgb(241, 86, 66)' }}
+                                onPress={() => Linking.openURL(REPORT_PATH + item.documentoId)}
+                                accessoryLeft={() => <FontAwesome6 name="file-pdf" size={16} color="white" />}
+                              >
+                                Baixar documento
+                              </Button>
+                            )}
+                          </View>
+                        </View>
+                      )}
+                    </Card>
+                  ))
+              ) : (
+                <View style={{ alignItems: 'center', marginTop: screenHeight * 0.2 }}>
+                  <Text>Nenhum lançamento para a unidade selecionada.</Text>
+                </View>
+              )}
+            </ScrollView>
+
+            <SafeAreaView style={{ padding: 20 }}>
+              <Button
+                style={{ backgroundColor: '#a6ce39', borderColor: '#a6ce39' }}
+                onPress={closeModal}
+              >
+                Voltar
+              </Button>
+            </SafeAreaView>
+            <Toast />
+          </Modal>
+        </KeyboardAvoidingView>
       </Layout>
     </Layout>
   );
