@@ -26,6 +26,8 @@ export default function ({ navigation }) {
   const [cityInput, setCityInput] = useState("");
   const [neighborhoodInput, setNeighborhoodInput] = useState("");
   const [publicPlaceInput, setPublicPlaceInput] = useState("");
+  console.log(neighborhoodInput, "neighborhoodInput");
+  console.log(publicPlaceInput, "publicPlaceinput");
   const [numberInput, setNumberInput] = useState("");
   const [blockInput, setBlockInput] = useState("");
   const [cepInput, setCepInput] = useState("");
@@ -167,6 +169,7 @@ export default function ({ navigation }) {
   // Usar useMemo para dados transformados ou filtrados
   const memoizedAddresses = useMemo(() => dataAddresses, [dataAddresses]);
   const memoizedNeighborhood = useMemo(() => dataNeighorbood, [dataNeighorbood]);
+  console.log(memoizedAddresses, "memoizedAddress")
 
   async function setSessionLogin() {
     try {
@@ -210,8 +213,8 @@ export default function ({ navigation }) {
     } catch (error) {
       Toast.show({
         type: 'error',
-        text1: "Falha ao salvar, tente novamente.",
-        text2: error.message
+        text1: "Erro ao salvar, tente novamente.",
+        text2: 'Nenhuma alteração foi identificada'
       });
     } finally {
       setInitialState({
@@ -337,7 +340,6 @@ export default function ({ navigation }) {
                 <FormControl.Label>Bairro</FormControl.Label>
                 <Select
                   onValueChange={(itemValue) => setNeighborhoodInput(itemValue)}
-                  isDisabled={!city}
                   placeholder={neighborhoodInput ? neighborhoodInput : "Selecione um bairro"}
                   selectedValue={neighborhoodInput}
                 >

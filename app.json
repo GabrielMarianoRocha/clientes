@@ -2,7 +2,7 @@
   "expo": {
     "name": "Atendimento águas",
     "slug": "atendimento-aguas",
-    "version": "1.0.0",
+    "version": "1.0.8",
     "orientation": "portrait",
     "icon": "./assets/images/logo-cogesan.png",
     "scheme": "myapp",
