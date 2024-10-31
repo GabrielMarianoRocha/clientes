@@ -34,6 +34,7 @@ export default function ({ navigation }) {
   const [loading, setLoading] = useState(false);
   const [isModified, setIsModified] = useState(false);
   const [initialState, setInitialState] = useState({});
+  const [citySelected, setCitySelected] = useState("");
   const [city, setCity] = useState("");
   const [cityTitle, setCityTitle] = useState("");
   const authData = useContext(AuthContext);
@@ -49,7 +50,7 @@ export default function ({ navigation }) {
     try {
       const value = await AsyncStorage.getItem('selectedCity');
       getNeighborhood(value);
-      setCity(value);
+      setCitySelected(value);
     } catch (error) {
       console.error("Erro ao recuperar municipio: ", error)
     }
@@ -71,6 +72,7 @@ export default function ({ navigation }) {
       setData(data);
       if (data.length > 0) {
         const pessoa = data[0];
+        console.log(pessoa, "pessoa");
         setInitialState(pessoa);
         setCpfCnpjInput(pessoa.cpfCnpj);
         setNameInput(pessoa.nome);
@@ -80,6 +82,7 @@ export default function ({ navigation }) {
           setCityInput(pessoa.municipioNome);
           setNeighborhoodInput(pessoa.bairroNome);
           setPublicPlaceInput(pessoa.logradouroNome);
+          setCity(pessoa.municipio);
         setNumberInput(pessoa.numero);
         setBlockInput(pessoa.quadra);
         setCepInput(pessoa.cep);
@@ -163,7 +166,6 @@ export default function ({ navigation }) {
 
   // Usar useMemo para dados transformados ou filtrados
   const memoizedAddresses = useMemo(() => dataAddresses, [dataAddresses]);
-  const memoizedCities = useMemo(() => dataCities, [dataCities]);
   const memoizedNeighborhood = useMemo(() => dataNeighorbood, [dataNeighorbood]);
 
   async function setSessionLogin() {
@@ -257,11 +259,12 @@ export default function ({ navigation }) {
         getLoggedUser(),
         getCities(),
         getData(user),
+        getAddresses(citySelected),
       ]);
       setLoading(false);
     };
     fetchAllData();
-  }, [user]);
+  }, [user, city]);
 
   useEffect(() => {
     checkIfModified();
@@ -319,7 +322,7 @@ export default function ({ navigation }) {
                 <FormControl.Label>Cidade</FormControl.Label>
                 <Select
                   placeholder={cityTitle}
-                  selectedValue={city}
+                  selectedValue={citySelected}
                   isDisabled
                 >
                   {dataCities.map((item, index) => (
@@ -335,7 +338,7 @@ export default function ({ navigation }) {
                 <Select
                   onValueChange={(itemValue) => setNeighborhoodInput(itemValue)}
                   isDisabled={!city}
-                  placeholder={neighborhoodInput ? publicPlaceInput : "Selecione um bairro"}
+                  placeholder={neighborhoodInput ? neighborhoodInput : "Selecione um bairro"}
                   selectedValue={neighborhoodInput}
                 >
                   {memoizedNeighborhood.map((item, index) => (
