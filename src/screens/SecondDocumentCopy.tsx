@@ -231,7 +231,7 @@ export default function ({ navigation }) {
             visible={visible}
             style={{
               marginTop: '5%',
-              minHeight: Dimensions.get('window').height,
+              height: Dimensions.get('window').height,
               width: Dimensions.get('window').width,
               backgroundColor: 'white',
               padding: 1,

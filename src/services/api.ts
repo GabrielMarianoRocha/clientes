@@ -60,7 +60,6 @@ const updatePeople = async (
   nome: string, 
   celular: string, 
   email: string, 
-  municipio: string,
   bairro: string, 
   logradouro: string, 
   numero: string, 
@@ -81,7 +80,6 @@ const updatePeople = async (
     Nome: nome,
     Celular: celular,
     Email: email,
-    MunicipioId: municipio,
     Bairro: bairro,
     Logradouro: logradouro,
     Numero: numero,
@@ -113,7 +111,7 @@ const listAddress = async (item) => {
 
   const headers = { Authorization: `Bearer ${token}` };
 
-  return axios.get(`${API_PATH}/listar-logradouro?municipioId=${item}`, { headers });
+  return axios.get(`${API_PATH}/listar-logradouro?Id=${item}`, { headers });
 }
 
 const listNeighborhood = async (item) => {
@@ -125,7 +123,7 @@ const listNeighborhood = async (item) => {
 
   const headers = { Authorization: `Bearer ${token}` };
 
-  return axios.get(`${API_PATH}/listar-bairros?municipioId=${item}`, { headers });
+  return axios.get(`${API_PATH}/listar-bairros?Id=${item}`, { headers });
 }
 
 const getDueDate = async (codigo: string, cpf: string) => {

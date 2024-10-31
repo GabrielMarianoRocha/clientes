@@ -1,8 +1,8 @@
-import React, { useState, useContext, useCallback, useEffect } from 'react';
+import React, { useState, useContext, useCallback, useEffect, useMemo } from 'react';
 import Layout from '../components/layout';
 import { TopNavigationAction, TopNavigation, Button } from '@ui-kitten/components';
 import { MaterialIcons } from '@expo/vector-icons';
-import { ScrollView, View } from 'react-native';
+import { ScrollView, View, Text } from 'react-native';
 import { Stack, NativeBaseProvider } from "native-base";
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { AuthContext } from '../contexts/auth';
@@ -34,6 +34,8 @@ export default function ({ navigation }) {
   const [loading, setLoading] = useState(false);
   const [isModified, setIsModified] = useState(false);
   const [initialState, setInitialState] = useState({});
+  const [city, setCity] = useState("");
+  const [cityTitle, setCityTitle] = useState("");
   const authData = useContext(AuthContext);
 
   const renderBackAction = (): React.ReactElement => (
@@ -42,6 +44,25 @@ export default function ({ navigation }) {
       onPressOut={() => navigation.goBack()}
     />
   );
+
+  async function getSelectedCity() {
+    try {
+      const value = await AsyncStorage.getItem('selectedCity');
+      getNeighborhood(value);
+      setCity(value);
+    } catch (error) {
+      console.error("Erro ao recuperar municipio: ", error)
+    }
+  }
+
+  async function getSelectedCityTitle() {
+    try {
+      const value = await AsyncStorage.getItem('selectedCityTitle');
+      setCityTitle(value);
+    } catch (error) {
+      console.error("Erro ao carregar municipio, ", error);
+    }
+  }
 
   const getData = useCallback(async (item) => {
     setLoading(true);
@@ -56,15 +77,9 @@ export default function ({ navigation }) {
         setTypeInput(pessoa.tipo);
         setPhoneInput(pessoa.celular);
         setMailInput(pessoa.email);
-        if (cityInput !== "" || neighborhoodInput !== "" || publicPlaceInput !== "") {
           setCityInput(pessoa.municipioNome);
           setNeighborhoodInput(pessoa.bairroNome);
           setPublicPlaceInput(pessoa.logradouroNome);
-        } else {
-          setCityInput("Selecione uma cidade");
-          setNeighborhoodInput("Selecione um bairro");
-          setPublicPlaceInput("Selecione um logradouro");
-        }
         setNumberInput(pessoa.numero);
         setBlockInput(pessoa.quadra);
         setCepInput(pessoa.cep);
@@ -78,27 +93,41 @@ export default function ({ navigation }) {
         text2: error.message,
       });
     } finally {
-      setLoading(false);
+      setTimeout(() => {
+        setLoading(false);
+      }, 1000);
     }
   }, [api]);
 
   const getAddresses = useCallback(async (item) => {
+    setLoading(true); // Ativa o loading ao iniciar o carregamento
     try {
-      const { data } = await api.listAddress(item);
-      setDataAddresses(data);
-    } catch (error) {
-      Toast.show({
-        type: 'error',
-        text1: 'Erro ao carregar endereços, tente novamente.',
-        text2: error.message,
+      const { data } = await api.listAddress(item); // Limite de 20 itens por página
+      // Só atualiza o estado se os dados tiverem mudado
+      setDataAddresses((prevData) => {
+        if (JSON.stringify(prevData) !== JSON.stringify(data)) {
+          return data;
+        }
+        return prevData;
       });
+    } catch (error) {
+      console.error("Erro ao carregar endereços.");
+    } finally {
+      setLoading(false); // Desativa o loading ao finalizar o carregamento
     }
   }, []);
 
+  // Função para carregar cidades com paginação e verificação de estado
   const getCities = useCallback(async () => {
+    setLoading(true);
     try {
-      const { data } = await api.listCities();
-      setDataCities(data);
+      const { data } = await api.listCities(); // Carrega 20 cidades por vez
+      setDataCities((prevData) => {
+        if (JSON.stringify(prevData) !== JSON.stringify(data)) {
+          return data;
+        }
+        return prevData;
+      });
     } catch (error) {
       Toast.show({
         type: 'error',
@@ -110,10 +139,17 @@ export default function ({ navigation }) {
     }
   }, []);
 
+  // Função para carregar bairros com paginação e verificação de estado
   const getNeighborhood = useCallback(async (item) => {
+    setLoading(true);
     try {
       const { data } = await api.listNeighborhood(item);
-      setDataNeighorbood(data);
+      setDataNeighorbood((prevData) => {
+        if (JSON.stringify(prevData) !== JSON.stringify(data)) {
+          return data;
+        }
+        return prevData;
+      });
     } catch (error) {
       Toast.show({
         type: 'error',
@@ -124,6 +160,11 @@ export default function ({ navigation }) {
       setLoading(false);
     }
   }, []);
+
+  // Usar useMemo para dados transformados ou filtrados
+  const memoizedAddresses = useMemo(() => dataAddresses, [dataAddresses]);
+  const memoizedCities = useMemo(() => dataCities, [dataCities]);
+  const memoizedNeighborhood = useMemo(() => dataNeighorbood, [dataNeighorbood]);
 
   async function setSessionLogin() {
     try {
@@ -137,8 +178,7 @@ export default function ({ navigation }) {
     try {
       const userLogged = await AsyncStorage.getItem('userLogged');
       if (userLogged !== null) {
-        setUser(JSON.parse(userLogged));  // Converte de volta em objeto
-        console.log("Usuário logado: ", JSON.parse(userLogged));
+        setUser(JSON.parse(userLogged));
       }
     } catch (error) {
       console.error("Erro ao recuperar usuário: ", error);
@@ -152,7 +192,6 @@ export default function ({ navigation }) {
         nameInput,
         phoneInput,
         mailInput,
-        cityInput,
         neighborhoodInput,
         publicPlaceInput,
         numberInput,
@@ -172,6 +211,21 @@ export default function ({ navigation }) {
         text1: "Falha ao salvar, tente novamente.",
         text2: error.message
       });
+    } finally {
+      setInitialState({
+        cpfCnpj: cpfCnpjInput,
+        nome: nameInput,
+        celular: phoneInput,
+        email: mailInput,
+        municipioNome: cityInput,
+        bairroNome: neighborhoodInput,
+        logradouroNome: publicPlaceInput,
+        numero: numberInput,
+        quadra: blockInput,
+        cep: cepInput,
+        complemento: complementInput,
+        lote: batchInput,
+     });
     }
   }, [cpfCnpjInput, nameInput, phoneInput, mailInput, cityInput, neighborhoodInput, publicPlaceInput, numberInput, blockInput, cepInput, complementInput, batchInput, user]);
 
@@ -194,10 +248,19 @@ export default function ({ navigation }) {
   }, [cpfCnpjInput, nameInput, phoneInput, mailInput, cityInput, neighborhoodInput, publicPlaceInput, numberInput, blockInput, cepInput, complementInput, batchInput, initialState]);
 
   useEffect(() => {
-    setSessionLogin();
-    getLoggedUser();
-    getCities();
-    getData(user);
+    const fetchAllData = async () => {
+      setLoading(true);
+      await Promise.all([
+        getSelectedCity(),
+        getSelectedCityTitle(),
+        setSessionLogin(),
+        getLoggedUser(),
+        getCities(),
+        getData(user),
+      ]);
+      setLoading(false);
+    };
+    fetchAllData();
   }, [user]);
 
   useEffect(() => {
@@ -214,149 +277,130 @@ export default function ({ navigation }) {
 
       <ScrollView style={{ maxHeight: '80%', marginTop: 30 }}>
         <NativeBaseProvider>
-          <Stack space={4} w="75%" maxW="300px" mx="auto">
-
-            {/* Campo CPF */}
-            <FormControl.Label>CPF</FormControl.Label>
-            <Input placeholder="CPF" value={cpfCnpjInput} isDisabled />
-
-            {/* Campo Nome */}
-            <FormControl.Label>Nome</FormControl.Label>
-            <Input
-              placeholder="Nome"
-              onChangeText={setNameInput}
-              value={nameInput}
-              isDisabled
-            />
-
-            {/* Campo Tipo */}
-            <FormControl.Label>Tipo</FormControl.Label>
-            <Input
-              placeholder="Tipo"
-              value={typeInput === "1" ? "Pessoa física" : "Pessoa jurídica"}
-              isDisabled
-            />
-
-            {/* Campo Celular */}
-            <FormControl.Label>Celular</FormControl.Label>
-            <TextInputMask
-              type="cel-phone"
-              options={{
-                maskType: 'BRL',
-                withDDD: true,
-                dddMask: '(99) ',
-              }}
-              value={phoneInput}
-              onChangeText={setPhoneInput}
-              customTextInput={Input}
-              customTextInputProps={{ placeholder: 'Digite seu número de celular' }}
-            />
-
-            {/* Campo E-mail */}
-            <FormControl.Label>E-mail</FormControl.Label>
-            <Input
-              placeholder="E-mail"
-              onChangeText={setMailInput}
-              value={mailInput}
-            />
-
-            {/* Campo Cidade */}
-            <FormControl.Label>Cidade</FormControl.Label>
-            <Select
-              onValueChange={(itemValue) => {
-                getNeighborhood(itemValue);
-                getAddresses(itemValue);
-                setCityInput(itemValue);
-              }}
-              placeholder={cityInput}
-              selectedValue={cityInput}
-            >
-              {dataCities.map((item, index) => (
-                <Select.Item
-                  key={item.municipio}
-                  label={`${item.nome} - ${item.uf}`}
-                  value={item.municipio}
+              <Stack space={4} w="75%" maxW="300px" mx="auto">
+                <FormControl.Label>CPF</FormControl.Label>
+                <Input placeholder="CPF" value={cpfCnpjInput} isDisabled />
+                <FormControl.Label>Nome</FormControl.Label>
+                <Input
+                  placeholder="Nome"
+                  onChangeText={setNameInput}
+                  value={nameInput}
+                  isDisabled
                 />
-              ))}
-            </Select>
 
-            {/* Campo Bairro */}
-            <FormControl.Label>Bairro</FormControl.Label>
-            <Select
-              onValueChange={setNeighborhoodInput}
-              isDisabled={!cityInput}
-              placeholder={neighborhoodInput}
-              selectedValue={neighborhoodInput}
-            >
-              {dataNeighorbood.map((item, index) => (
-                <Select.Item
-                  key={item.nome}
-                  label={item.nome}
-                  value={item.bairroId}
+                <FormControl.Label>Tipo</FormControl.Label>
+                <Input
+                  placeholder="Tipo"
+                  value={typeInput === "1" ? "Pessoa física" : "Pessoa jurídica"}
+                  isDisabled
                 />
-              ))}
-            </Select>
 
-            {/* Campo Logradouro */}
-            <FormControl.Label>Logradouro</FormControl.Label>
-            <Select
-              onValueChange={setPublicPlaceInput}
-              placeholder={publicPlaceInput}
-              selectedValue={publicPlaceInput}
-            >
-              {dataAddresses.map((item, index) => (
-                <Select.Item
-                  key={item.codigo}
-                  label={item.nome}
-                  value={item.municipio}
+                <FormControl.Label>Celular</FormControl.Label>
+                <TextInputMask
+                  type="cel-phone"
+                  options={{
+                    maskType: 'BRL',
+                    withDDD: true,
+                    dddMask: '(99) ',
+                  }}
+                  value={phoneInput}
+                  onChangeText={setPhoneInput}
+                  customTextInput={Input}
+                  customTextInputProps={{ placeholder: 'Digite seu número de celular' }}
                 />
-              ))}
-            </Select>
 
-            {/* Campo Número */}
-            <FormControl.Label>Número</FormControl.Label>
-            <Input
-              keyboardType="numeric"
-              placeholder="Número"
-              value={numberInput}
-              onChangeText={setNumberInput}
-            />
+                <FormControl.Label>E-mail</FormControl.Label>
+                <Input
+                  placeholder="E-mail"
+                  onChangeText={setMailInput}
+                  value={mailInput}
+                />
 
-            {/* Campo Complemento */}
-            <FormControl.Label>Complemento</FormControl.Label>
-            <Input
-              placeholder="Complemento"
-              value={complementInput}
-              onChangeText={setComplementInput}
-            />
+                <FormControl.Label>Cidade</FormControl.Label>
+                <Select
+                  placeholder={cityTitle}
+                  selectedValue={city}
+                  isDisabled
+                >
+                  {dataCities.map((item, index) => (
+                    <Select.Item
+                      key={item.municipio}
+                      label={`${item.nome} - ${item.uf}`}
+                      value={item.municipio}
+                    />
+                  ))}
+                </Select>
 
-            {/* Campo Quadra */}
-            <FormControl.Label>Quadra</FormControl.Label>
-            <Input
-              placeholder="Quadra"
-              value={blockInput}
-              onChangeText={setBlockInput}
-            />
+                <FormControl.Label>Bairro</FormControl.Label>
+                <Select
+                  onValueChange={(itemValue) => setNeighborhoodInput(itemValue)}
+                  isDisabled={!city}
+                  placeholder={neighborhoodInput ? publicPlaceInput : "Selecione um bairro"}
+                  selectedValue={neighborhoodInput}
+                >
+                  {memoizedNeighborhood.map((item, index) => (
+                    <Select.Item
+                      key={item.nome}
+                      label={item.nome}
+                      value={item.bairroId}
+                    />
+                  ))}
+                </Select>
 
-            {/* Campo Lote */}
-            <FormControl.Label>Lote</FormControl.Label>
-            <Input
-              placeholder="Lote"
-              value={batchInput}
-              onChangeText={setBatchInput}
-            />
+                <FormControl.Label>Logradouro</FormControl.Label>
+                <Select
+                  onValueChange={(itemValue) => setPublicPlaceInput(itemValue)}
+                  placeholder={publicPlaceInput ? publicPlaceInput : "Selecione um logradouro"}
+                  selectedValue={publicPlaceInput}
+                >
+                  {memoizedAddresses.map((item, index) => (
+                    <Select.Item
+                      key={item.nome}
+                      label={item.nome}
+                      value={item.logradouroId}
+                    />
+                  ))}
+                </Select>
 
-            {/* Campo CEP */}
-            <FormControl.Label>CEP</FormControl.Label>
-            <TextInputMask
-              type="zip-code"
-              value={cepInput}
-              onChangeText={setCepInput}
-              customTextInput={Input}
-              customTextInputProps={{ placeholder: 'CEP' }}
-            />
+                <FormControl.Label>Número</FormControl.Label>
+                <Input
+                  keyboardType="numeric"
+                  placeholder="Número"
+                  value={numberInput}
+                  onChangeText={setNumberInput}
+                />
 
-          </Stack>
+                <FormControl.Label>Complemento</FormControl.Label>
+                <Input
+                  placeholder="Complemento"
+                  value={complementInput}
+                  onChangeText={setComplementInput}
+                />
+
+                <FormControl.Label>Quadra</FormControl.Label>
+                <Input
+                  placeholder="Quadra"
+                  value={blockInput}
+                  onChangeText={setBlockInput}
+                />
+
+                <FormControl.Label>Lote</FormControl.Label>
+                <Input
+                  placeholder="Lote"
+                  value={batchInput}
+                  onChangeText={setBatchInput}
+                />
+
+                <FormControl.Label>CEP</FormControl.Label>
+                <TextInputMask
+                  type="zip-code"
+                  value={cepInput}
+                  onChangeText={setCepInput}
+                  customTextInput={Input}
+                  customTextInputProps={{ placeholder: 'CEP' }}
+                />
+
+              </Stack>
         </NativeBaseProvider>
       </ScrollView>
 

@@ -33,6 +33,13 @@ export default function ({ navigation }) {
     }
   }
 
+  async function saveSelectedCityTitle() {
+    try {
+      await AsyncStorage.setItem('selectedCityTitle', city?.title);
+    } catch (error) {
+      console.error("Erro ao salvar municipio: ", error);
+    }
+  }
 
   async function setLogoUrl() {
     try {
@@ -153,6 +160,7 @@ export default function ({ navigation }) {
   useEffect(() => {
     getLogo();
     saveSelectedCity();
+    saveSelectedCityTitle();
   }, [getLogo]);
 
   return (
