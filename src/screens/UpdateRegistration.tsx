@@ -26,8 +26,6 @@ export default function ({ navigation }) {
   const [cityInput, setCityInput] = useState("");
   const [neighborhoodInput, setNeighborhoodInput] = useState("");
   const [publicPlaceInput, setPublicPlaceInput] = useState("");
-  console.log(neighborhoodInput, "neighborhoodInput");
-  console.log(publicPlaceInput, "publicPlaceinput");
   const [numberInput, setNumberInput] = useState("");
   const [blockInput, setBlockInput] = useState("");
   const [cepInput, setCepInput] = useState("");
@@ -74,17 +72,16 @@ export default function ({ navigation }) {
       setData(data);
       if (data.length > 0) {
         const pessoa = data[0];
-        console.log(pessoa, "pessoa");
         setInitialState(pessoa);
         setCpfCnpjInput(pessoa.cpfCnpj);
         setNameInput(pessoa.nome);
         setTypeInput(pessoa.tipo);
         setPhoneInput(pessoa.celular);
         setMailInput(pessoa.email);
-          setCityInput(pessoa.municipioNome);
-          setNeighborhoodInput(pessoa.bairroNome);
-          setPublicPlaceInput(pessoa.logradouroNome);
-          setCity(pessoa.municipio);
+        setCityInput(pessoa.municipioNome);
+        setNeighborhoodInput(pessoa.bairroNome);
+        setPublicPlaceInput(pessoa.logradouroNome);
+        setCity(pessoa.municipio);
         setNumberInput(pessoa.numero);
         setBlockInput(pessoa.quadra);
         setCepInput(pessoa.cep);
@@ -105,7 +102,6 @@ export default function ({ navigation }) {
   }, [api]);
 
   const getAddresses = useCallback(async (item) => {
-    setLoading(true); // Ativa o loading ao iniciar o carregamento
     try {
       const { data } = await api.listAddress(item); // Limite de 20 itens por página
       // Só atualiza o estado se os dados tiverem mudado
@@ -117,14 +113,11 @@ export default function ({ navigation }) {
       });
     } catch (error) {
       console.error("Erro ao carregar endereços.");
-    } finally {
-      setLoading(false); // Desativa o loading ao finalizar o carregamento
     }
   }, []);
 
   // Função para carregar cidades com paginação e verificação de estado
   const getCities = useCallback(async () => {
-    setLoading(true);
     try {
       const { data } = await api.listCities(); // Carrega 20 cidades por vez
       setDataCities((prevData) => {
@@ -139,14 +132,11 @@ export default function ({ navigation }) {
         text1: 'Erro ao carregar municipios, tente novamente.',
         text2: error.message,
       });
-    } finally {
-      setLoading(false);
     }
   }, []);
 
   // Função para carregar bairros com paginação e verificação de estado
   const getNeighborhood = useCallback(async (item) => {
-    setLoading(true);
     try {
       const { data } = await api.listNeighborhood(item);
       setDataNeighorbood((prevData) => {
@@ -161,15 +151,12 @@ export default function ({ navigation }) {
         text1: 'Erro ao carregar bairros, tente novamente.',
         text2: error.message,
       });
-    } finally {
-      setLoading(false);
     }
   }, []);
 
   // Usar useMemo para dados transformados ou filtrados
   const memoizedAddresses = useMemo(() => dataAddresses, [dataAddresses]);
   const memoizedNeighborhood = useMemo(() => dataNeighorbood, [dataNeighorbood]);
-  console.log(memoizedAddresses, "memoizedAddress")
 
   async function setSessionLogin() {
     try {
@@ -254,7 +241,6 @@ export default function ({ navigation }) {
 
   useEffect(() => {
     const fetchAllData = async () => {
-      setLoading(true);
       await Promise.all([
         getSelectedCity(),
         getSelectedCityTitle(),
@@ -264,7 +250,6 @@ export default function ({ navigation }) {
         getData(user),
         getAddresses(citySelected),
       ]);
-      setLoading(false);
     };
     fetchAllData();
   }, [user, city]);
