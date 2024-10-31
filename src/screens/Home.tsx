@@ -61,7 +61,6 @@ export default function ({ navigation }) {
     try {
       const city = await AsyncStorage.getItem('selectedCity');
       if (city !== null) {
-        console.log("Municipio selecionado: ", city);
         return city;
       }
     } catch (error) {
@@ -86,8 +85,6 @@ export default function ({ navigation }) {
       setLogo(response.data);
     } catch (error) {
       console.error("Erro ao carregar imagens", error)
-    } finally {
-      console.log("Imagens carregadas com sucesso");
     }
   }, [api]);
 
@@ -96,7 +93,6 @@ export default function ({ navigation }) {
     try {
       const citySelected = await AsyncStorage.getItem('selectedCity');
       if (citySelected !== null) {
-        console.log("Municipio selecionado: ", citySelected);
         setSelectedCity(citySelected);
         getLogo(citySelected);
         return citySelected;
@@ -114,8 +110,6 @@ export default function ({ navigation }) {
       setWhatsapp(response.data.map((item) => item.contatoWhatsapp));
     } catch (error) {
       console.error("Erro ao carregar contato", error);
-    } finally {
-      console.log("Contato carregado com sucesso");
     }
   }, [AsyncStorage]);
 
