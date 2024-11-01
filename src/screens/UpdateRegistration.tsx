@@ -157,7 +157,6 @@ export default function ({ navigation }) {
   // Usar useMemo para dados transformados ou filtrados
   const memoizedAddresses = useMemo(() => dataAddresses, [dataAddresses]);
   const memoizedNeighborhood = useMemo(() => dataNeighorbood, [dataNeighorbood]);
-
   async function setSessionLogin() {
     try {
       await AsyncStorage.setItem('userLogged', JSON.stringify(authData.user));
@@ -270,13 +269,14 @@ export default function ({ navigation }) {
         <NativeBaseProvider>
               <Stack space={4} w="75%" maxW="300px" mx="auto">
                 <FormControl.Label>CPF</FormControl.Label>
-                <Input placeholder="CPF" value={cpfCnpjInput} isDisabled />
+                <Input placeholder="CPF" value={cpfCnpjInput} isDisabled fontWeight={'extrabold'}/>
                 <FormControl.Label>Nome</FormControl.Label>
                 <Input
                   placeholder="Nome"
                   onChangeText={setNameInput}
                   value={nameInput}
                   isDisabled
+                  fontWeight={'extrabold'}
                 />
 
                 <FormControl.Label>Tipo</FormControl.Label>
@@ -284,6 +284,7 @@ export default function ({ navigation }) {
                   placeholder="Tipo"
                   value={typeInput === "1" ? "Pessoa física" : "Pessoa jurídica"}
                   isDisabled
+                  fontWeight={'extrabold'}
                 />
 
                 <FormControl.Label>Celular</FormControl.Label>
@@ -312,6 +313,7 @@ export default function ({ navigation }) {
                   placeholder={cityTitle}
                   selectedValue={citySelected}
                   isDisabled
+                  fontWeight={'bold'}
                 >
                   {dataCities.map((item, index) => (
                     <Select.Item
@@ -327,6 +329,7 @@ export default function ({ navigation }) {
                   onValueChange={(itemValue) => setNeighborhoodInput(itemValue)}
                   placeholder={neighborhoodInput ? neighborhoodInput : "Selecione um bairro"}
                   selectedValue={neighborhoodInput}
+                  fontWeight={'extrabold'}
                 >
                   {memoizedNeighborhood.map((item, index) => (
                     <Select.Item
@@ -342,6 +345,7 @@ export default function ({ navigation }) {
                   onValueChange={(itemValue) => setPublicPlaceInput(itemValue)}
                   placeholder={publicPlaceInput ? publicPlaceInput : "Selecione um logradouro"}
                   selectedValue={publicPlaceInput}
+                  fontWeight={'extrabold'}
                 >
                   {memoizedAddresses.map((item, index) => (
                     <Select.Item

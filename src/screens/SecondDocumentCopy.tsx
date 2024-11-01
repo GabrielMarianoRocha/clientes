@@ -86,7 +86,6 @@ export default function ({ navigation }) {
 
   const openPaymentModal = async (item: IUc) => {
     setLoadingModal(true);
-    setLoading(true)
     try {
       let response = await api.ucsDetail(item.codigo);
       response = response.filter((item) => item.situacao);
@@ -99,7 +98,6 @@ export default function ({ navigation }) {
         text2: error.message,
       });
     } finally {
-      setLoading(false);
       setTimeout(() => {
         setLoadingModal(false);
       }, 500);
