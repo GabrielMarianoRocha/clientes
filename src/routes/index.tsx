@@ -18,7 +18,7 @@ const Routes = () => {
 
   return (
     <Stack.Navigator>
-      {isAuthenticated ? (
+      {!isAuthenticated ? (
         <Stack.Group
           screenOptions={{
             headerShown: false,

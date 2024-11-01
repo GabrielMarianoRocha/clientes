@@ -234,7 +234,7 @@ export default function ({ navigation }) {
                 required
               />
               <Button
-                onPress={handleSubmit(onSubmit)}
+                onPress={navigation.navigate("Home")}
                 style={{
                   marginTop: 20,
                   backgroundColor: loading ? 'lightgray' : '#4169E1',

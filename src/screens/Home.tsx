@@ -75,7 +75,7 @@ export default function ({ navigation }) {
           <SimpleLineIcons name="logout" size={20} color="#4169E1" />
         </>
       }
-      onPressOut={signOut}
+      onPressOut={navigation.navigate('Login')}
     />
   );
 

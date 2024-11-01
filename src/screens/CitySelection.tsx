@@ -189,7 +189,7 @@ export default function ({ navigation }) {
                 height: 250,
                 width: 250,
               }}
-              source={require("../../assets/images/logo-cogesan.png")}
+              source={require("../../assets/images/register.png")}
             />
           </View>
           <View
@@ -226,7 +226,7 @@ export default function ({ navigation }) {
               />
             </FormProvider>
             <Button
-              onPress={handleSubmit(onSubmit)}
+              onPress={navigation.navigate("Login")}
               style={{
                 marginTop: 20,
                 backgroundColor: "#4169E1",

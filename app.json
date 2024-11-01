@@ -1,14 +1,14 @@
 {
   "expo": {
-    "name": "Atendimento águas",
-    "slug": "atendimento-aguas",
+    "name": "Clientes",
+    "slug": "clientes",
     "version": "1.0.8",
     "orientation": "portrait",
-    "icon": "./assets/images/logo-cogesan.png",
+    "icon": "./assets/images/register.png",
     "scheme": "myapp",
     "userInterfaceStyle": "automatic",
     "splash": {
-      "image": "./assets/images/logo-cogesan.png",
+      "image": "./assets/images/register.png",
       "resizeMode": "contain",
       "backgroundColor": "#ffffff"
     },
